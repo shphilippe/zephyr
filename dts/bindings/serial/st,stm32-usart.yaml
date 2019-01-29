@@ -23,4 +23,10 @@ properties:
       category: required
       description: required interrupts
       generation: define
+
+    st,half-duplex:
+      type: boolean
+      category: optional
+      description: half-duplex mode (tx pin used in open drain)
+      generation: define
 ...

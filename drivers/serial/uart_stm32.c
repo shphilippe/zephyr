@@ -617,6 +617,10 @@ static int uart_stm32_init(struct device *dev)
 
 	LL_USART_Disable(UartInstance);
 
+	if (config->half_duplex) {
+		LL_USART_EnableHalfDuplex(UartInstance);
+	}
+
 	/* TX/RX direction */
 	LL_USART_SetTransferDirection(UartInstance,
 				      LL_USART_DIRECTION_TX_RX);
@@ -682,6 +686,7 @@ static const struct uart_stm32_config uart_stm32_cfg_##name = {		\
 	.pclken = { .bus = DT_UART_STM32_##name##_CLOCK_BUS,	\
 		    .enr = DT_UART_STM32_##name##_CLOCK_BITS	\
 	},								\
+	.half_duplex = DT_UART_STM32_##name##_ST_HALF_DUPLEX, \
 };									\
 									\
 static struct uart_stm32_data uart_stm32_data_##name = {		\

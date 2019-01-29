@@ -29,4 +29,10 @@ properties:
       category: required
       description: Clock gate information
       generation: define
+
+    st,half-duplex:
+      type: boolean
+      category: optional
+      description: half-duplex mode (tx pin used in open drain)
+      generation: define
 ...
