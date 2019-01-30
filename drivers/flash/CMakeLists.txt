@@ -18,6 +18,12 @@ zephyr_library_sources_ifdef(CONFIG_SOC_FLASH_STM32
 	flash_stm32f0x.c
 	)
 endif()
+if(CONFIG_SOC_SERIES_STM32G0X)
+zephyr_library_sources_ifdef(CONFIG_SOC_FLASH_STM32
+	flash_stm32.c
+	flash_stm32g0x.c
+	)
+endif()
 
 if(CONFIG_SOC_SERIES_STM32F3X)
 zephyr_library_sources_ifdef(CONFIG_SOC_FLASH_STM32 flash_stm32f3x.c)
