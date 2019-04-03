@@ -40,7 +40,11 @@
 #elif defined(CONFIG_SOC_SERIES_STM32F7X)
 #define EXTI_LINES 24
 #elif defined(CONFIG_SOC_SERIES_STM32G0X)
+#ifdef EXTI_IMR2_IM
 #define EXTI_LINES 34
+#else
+#define EXTI_LINES 32
+#endif
 #elif defined(CONFIG_SOC_SERIES_STM32L0X)
 #define EXTI_LINES 30
 #elif defined(CONFIG_SOC_SERIES_STM32L4X)
@@ -82,7 +86,7 @@ int stm32_exti_enable(int line)
 		irqnum = EXTI2_3_IRQn;
 	} else if (line >= 0  && line <= 1) {
 		irqnum = EXTI0_1_IRQn;
-#if defined(CONFIG_SOC_SERIES_STM32G0X)
+#if defined(CONFIG_SOC_SERIES_STM32G0X) && defined(PWR_PVD_SUPPORT)
 	} else if (line == 16) {
 		irqnum = PVD_IRQn;
 #endif
@@ -333,7 +337,9 @@ static inline void __stm32_exti_isr_15_10(void *arg)
 #if defined(CONFIG_SOC_SERIES_STM32F4X) || \
 	defined(CONFIG_SOC_SERIES_STM32F7X) || \
 	defined(CONFIG_SOC_SERIES_STM32F2X) || \
-	defined(CONFIG_SOC_SERIES_STM32G0X)
+	(defined(CONFIG_SOC_SERIES_STM32G0X) && \
+	defined(PWR_PVD_SUPPORT))
+
 static inline void __stm32_exti_isr_16(void *arg)
 {
 	__stm32_exti_isr(16, 17, arg);
@@ -435,7 +441,7 @@ static void __stm32_exti_connect_irqs(struct device *dev)
 		CONFIG_EXTI_STM32_EXTI15_4_IRQ_PRI,
 		__stm32_exti_isr_4_15, DEVICE_GET(exti_stm32),
 		0);
-#if defined(CONFIG_SOC_SERIES_STM32G0X)
+#if defined(CONFIG_SOC_SERIES_STM32G0X) && defined(PWR_PVD_SUPPORT)
 	IRQ_CONNECT(PVD_IRQn,
 		CONFIG_EXTI_STM32_PVD_IRQ_PRI,
 		__stm32_exti_isr_16, DEVICE_GET(exti_stm32),
