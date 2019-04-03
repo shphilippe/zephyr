@@ -19,6 +19,7 @@ struct uart_stm32_config {
 	struct stm32_pclken pclken;
 	/* special configuration */
 	bool half_duplex;
+	bool swap_rx_tx;
 };
 
 /* driver data */

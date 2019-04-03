@@ -621,6 +621,10 @@ static int uart_stm32_init(struct device *dev)
 		LL_USART_EnableHalfDuplex(UartInstance);
 	}
 
+	if (config->swap_rx_tx) {
+		LL_USART_SetTXRXSwap(UartInstance, LL_USART_TXRX_SWAPPED);
+	}
+
 	/* TX/RX direction */
 	LL_USART_SetTransferDirection(UartInstance,
 				      LL_USART_DIRECTION_TX_RX);
@@ -687,6 +691,7 @@ static const struct uart_stm32_config uart_stm32_cfg_##name = {		\
 		    .enr = DT_UART_STM32_##name##_CLOCK_BITS	\
 	},								\
 	.half_duplex = DT_UART_STM32_##name##_ST_HALF_DUPLEX, \
+	.swap_rx_tx = DT_UART_STM32_##name##_ST_SWAP_RX_TX, \
 };									\
 									\
 static struct uart_stm32_data uart_stm32_data_##name = {		\

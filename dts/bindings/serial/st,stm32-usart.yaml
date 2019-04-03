@@ -29,4 +29,11 @@ properties:
       category: optional
       description: half-duplex mode (tx pin used in open drain)
       generation: define
+
+    st,swap-rx-tx:
+      type: boolean
+      category: optional
+      descrition: Swap RX/TX pins
+      generation: define
+
 ...
