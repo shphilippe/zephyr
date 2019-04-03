@@ -320,6 +320,7 @@ config CLOCK_STM32_PLL_N_MULTIPLIER
 	  PLL multiplier, allowed values: 8-86. PLL output must not
 	  exceed 344MHz.
 
+if SOC_SERIES_STM32G0X_HAS_PLLQ
 config CLOCK_STM32_PLL_Q_DIVISOR
 	int "PLL Q Divisor"
 	depends on CLOCK_STM32_SYSCLK_SRC_PLL
@@ -327,6 +328,7 @@ config CLOCK_STM32_PLL_Q_DIVISOR
 	range 2 8
 	help
 	  PLL Q Output divisor, allowed values: 2-8.
+endif # SOC_SERIES_STM32G0X_HAS_PLLQ
 
 config CLOCK_STM32_PLL_R_DIVISOR
 	int "PLL R Divisor"

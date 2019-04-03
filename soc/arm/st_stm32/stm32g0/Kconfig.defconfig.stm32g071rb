@@ -15,6 +15,10 @@ config NUM_IRQS
 	int
 	default 31
 
+config SOC_SERIES_STM32G0X_HAS_PLLQ
+	bool
+	default y
+
 if GPIO_STM32
 
 endif # GPIO_STM32
