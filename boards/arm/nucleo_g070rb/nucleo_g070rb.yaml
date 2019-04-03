@@ -1,0 +1,10 @@
+identifier: nucleo_g070rb
+name: NUCLEO-G070RB
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 36
+flash: 128
