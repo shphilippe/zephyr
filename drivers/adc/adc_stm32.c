@@ -24,7 +24,8 @@ LOG_MODULE_REGISTER(adc_stm32);
 #include <clock_control/stm32_clock_control.h>
 
 #if !defined(CONFIG_SOC_SERIES_STM32F0X) && \
-	!defined(CONFIG_SOC_SERIES_STM32L0X)
+	!defined(CONFIG_SOC_SERIES_STM32L0X) && \
+	!defined(CONFIG_SOC_SERIES_STM32G0X)
 #define RANK(n)		LL_ADC_REG_RANK_##n
 static const u32_t table_rank[] = {
 	RANK(1),
@@ -135,7 +136,7 @@ static const u32_t table_samp_time[] = {
 	SMP_TIME(239, S_5),
 };
 #endif /* ADC5_V1_1 */
-#elif defined(CONFIG_SOC_SERIES_STM32L0X)
+#elif defined(CONFIG_SOC_SERIES_STM32L0X) || defined(CONFIG_SOC_SERIES_STM32G0X)
 static const u16_t acq_time_tbl[8] = {2, 4, 8, 13, 20, 40, 80, 161};
 static const u32_t table_samp_time[] = {
 	SMP_TIME(1,   _5),
@@ -172,7 +173,8 @@ struct adc_stm32_data {
 
 	u8_t resolution;
 	u8_t channel_count;
-#if defined(CONFIG_SOC_SERIES_STM32F0X) || defined(CONFIG_SOC_SERIES_STM32L0X)
+#if defined(CONFIG_SOC_SERIES_STM32F0X) || defined(CONFIG_SOC_SERIES_STM32L0X) || \
+	defined(CONFIG_SOC_SERIES_STM32G0X)
 	s8_t acq_time_index;
 #endif
 };
@@ -214,7 +216,8 @@ static void adc_stm32_start_conversion(struct device *dev)
 #if defined(CONFIG_SOC_SERIES_STM32F0X) || \
 	defined(CONFIG_SOC_SERIES_STM32F3X) || \
 	defined(CONFIG_SOC_SERIES_STM32L0X) || \
-	defined(CONFIG_SOC_SERIES_STM32L4X)
+	defined(CONFIG_SOC_SERIES_STM32L4X) || \
+	defined(CONFIG_SOC_SERIES_STM32G0X)
 	LL_ADC_REG_StartConversion(adc);
 #else
 	LL_ADC_REG_StartConversionSWStart(adc);
@@ -257,7 +260,8 @@ static int start_read(struct device *dev, const struct adc_sequence *sequence)
 	index = find_lsb_set(channels) - 1;
 	u32_t channel = __LL_ADC_DECIMAL_NB_TO_CHANNEL(index);
 #if defined(CONFIG_SOC_SERIES_STM32F0X) || \
-	defined(CONFIG_SOC_SERIES_STM32L0X)
+	defined(CONFIG_SOC_SERIES_STM32L0X) || \
+	defined(CONFIG_SOC_SERIES_STM32G0X)
 	LL_ADC_REG_SetSequencerChannels(adc, channel);
 #else
 	LL_ADC_REG_SetSequencerRanks(adc, table_rank[0], channel);
@@ -277,7 +281,8 @@ static int start_read(struct device *dev, const struct adc_sequence *sequence)
 #if defined(CONFIG_SOC_SERIES_STM32F0X) || \
 	defined(CONFIG_SOC_SERIES_STM32F3X) || \
 	defined(CONFIG_SOC_SERIES_STM32L0X) || \
-	defined(CONFIG_SOC_SERIES_STM32L4X)
+	defined(CONFIG_SOC_SERIES_STM32L4X) || \
+	defined(CONFIG_SOC_SERIES_STM32G0X)
 	LL_ADC_EnableIT_EOC(adc);
 #elif defined(CONFIG_SOC_SERIES_STM32F1X)
 	LL_ADC_EnableIT_EOS(adc);
@@ -381,6 +386,9 @@ static void adc_stm32_setup_speed(struct device *dev, u8_t id,
 #if defined(CONFIG_SOC_SERIES_STM32F0X) || defined(CONFIG_SOC_SERIES_STM32L0X)
 	LL_ADC_SetSamplingTimeCommonChannels(adc,
 		table_samp_time[acq_time_index]);
+#elif defined(CONFIG_SOC_SERIES_STM32G0X)
+	LL_ADC_SetSamplingTimeCommonChannels(adc, LL_ADC_SAMPLINGTIME_COMMON_1,
+		table_samp_time[acq_time_index]);
 #else
 	LL_ADC_SetChannelSamplingTime(adc,
 		__LL_ADC_DECIMAL_NB_TO_CHANNEL(id),
@@ -391,7 +399,8 @@ static void adc_stm32_setup_speed(struct device *dev, u8_t id,
 static int adc_stm32_channel_setup(struct device *dev,
 			    const struct adc_channel_cfg *channel_cfg)
 {
-#if defined(CONFIG_SOC_SERIES_STM32F0X) || defined(CONFIG_SOC_SERIES_STM32L0X)
+#if defined(CONFIG_SOC_SERIES_STM32F0X) || defined(CONFIG_SOC_SERIES_STM32L0X) || \
+	defined(CONFIG_SOC_SERIES_STM32G0X)
 	struct adc_stm32_data *data = dev->driver_data;
 #endif
 	int acq_time_index;
@@ -406,7 +415,8 @@ static int adc_stm32_channel_setup(struct device *dev,
 	if (acq_time_index < 0) {
 		return acq_time_index;
 	}
-#if defined(CONFIG_SOC_SERIES_STM32F0X) || defined(CONFIG_SOC_SERIES_STM32L0X)
+#if defined(CONFIG_SOC_SERIES_STM32F0X) || defined(CONFIG_SOC_SERIES_STM32L0X) || \
+	defined(CONFIG_SOC_SERIES_STM32G0X)
 	if (data->acq_time_index == -1) {
 		data->acq_time_index = acq_time_index;
 	} else {
@@ -454,7 +464,8 @@ static void adc_stm32_calib(struct device *dev)
 	defined(CONFIG_SOC_SERIES_STM32L4X)
 	LL_ADC_StartCalibration(adc, LL_ADC_SINGLE_ENDED);
 #elif defined(CONFIG_SOC_SERIES_STM32F0X) || \
-	defined(CONFIG_SOC_SERIES_STM32L0X)
+	defined(CONFIG_SOC_SERIES_STM32L0X) || \
+	defined(CONFIG_SOC_SERIES_STM32G0X)
 	LL_ADC_StartCalibration(adc);
 #endif
 	while (LL_ADC_IsCalibrationOnGoing(adc))
@@ -473,7 +484,8 @@ static int adc_stm32_init(struct device *dev)
 	LOG_DBG("Initializing....");
 
 	data->dev = dev;
-#if defined(CONFIG_SOC_SERIES_STM32F0X) || defined(CONFIG_SOC_SERIES_STM32L0X)
+#if defined(CONFIG_SOC_SERIES_STM32F0X) || defined(CONFIG_SOC_SERIES_STM32L0X) || \
+	defined(CONFIG_SOC_SERIES_STM32G0X)
 	data->acq_time_index = -1;
 #endif
 
@@ -484,12 +496,11 @@ static int adc_stm32_init(struct device *dev)
 
 #if defined(CONFIG_SOC_SERIES_STM32L4X)
 	LL_ADC_DisableDeepPowerDown(adc);
+#endif
+#if defined(CONFIG_SOC_SERIES_STM32L4X) || defined(CONFIG_SOC_SERIES_STM32G0X)
 	LL_ADC_EnableInternalRegulator(adc);
-	u32_t wait_loop_index = ((LL_ADC_DELAY_INTERNAL_REGUL_STAB_US / 10UL) *
-				(SystemCoreClock / (100000UL * 2UL)));
-	while (wait_loop_index != 0UL) {
-		wait_loop_index--;
-	}
+
+	k_busy_wait(LL_ADC_DELAY_INTERNAL_REGUL_STAB_US);
 #endif
 
 #if defined(CONFIG_SOC_SERIES_STM32F0X) || \
@@ -497,7 +508,8 @@ static int adc_stm32_init(struct device *dev)
 	LL_ADC_SetClock(adc, LL_ADC_CLOCK_SYNC_PCLK_DIV4);
 #endif
 #if defined(CONFIG_SOC_SERIES_STM32F3X) || \
-	defined(CONFIG_SOC_SERIES_STM32L4X)
+	defined(CONFIG_SOC_SERIES_STM32L4X) || \
+	defined(CONFIG_SOC_SERIES_STM32G0X)
 	LL_ADC_SetCommonClock(__LL_ADC_COMMON_INSTANCE(),
 			LL_ADC_CLOCK_SYNC_PCLK_DIV4);
 #endif
@@ -510,7 +522,8 @@ static int adc_stm32_init(struct device *dev)
 #endif
 
 #if defined(CONFIG_SOC_SERIES_STM32F0X) || \
-	defined(CONFIG_SOC_SERIES_STM32L0X)
+	defined(CONFIG_SOC_SERIES_STM32L0X) || \
+	defined(CONFIG_SOC_SERIES_STM32G0X)
 	if (LL_ADC_IsActiveFlag_ADRDY(adc)) {
 		LL_ADC_ClearFlag_ADRDY(adc);
 	}
@@ -518,7 +531,8 @@ static int adc_stm32_init(struct device *dev)
 	LL_ADC_SetCommonPathInternalCh(ADC, LL_ADC_PATH_INTERNAL_VREFINT);
 #endif
 	LL_ADC_Enable(adc);
-#ifdef CONFIG_SOC_SERIES_STM32L4X
+#if defined(CONFIG_SOC_SERIES_STM32L4X) || \
+	defined(CONFIG_SOC_SERIES_STM32G0X)
 	/* Refer to the description of ADRDY in reference manual. */
 	u32_t countTimeout = 0;
 
