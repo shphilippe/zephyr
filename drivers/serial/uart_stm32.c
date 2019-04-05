@@ -20,6 +20,7 @@
 
 #include <linker/sections.h>
 #include <clock_control/stm32_clock_control.h>
+#include <drivers/serial/uart_stm32.h>
 #include "uart_stm32.h"
 
 /* convenience defines */
@@ -363,6 +364,36 @@ static int uart_stm32_config_get(struct device *dev, struct uart_config *cfg)
 	return 0;
 }
 
+#ifdef CONFIG_UART_STM32_DRV_CMD
+static int uart_stm32_drv_cmd(struct device *dev, u32_t cmd, u32_t p)
+{
+	USART_TypeDef *UartInstance = UART_STRUCT(dev);
+	switch(cmd) {
+	case UART_STM32_SET_RS485:
+	{
+		struct uart_stm32_rs485 * c = (struct uart_stm32_rs485 *) p;
+		LL_USART_Disable(UartInstance);
+
+		if (c->deat >= 0 && c->dedt >= 0 && c->deat < 32 && c->dedt < 32) {
+			LL_USART_SetDEDeassertionTime(UartInstance, c->deat);
+			LL_USART_SetDEDeassertionTime(UartInstance, c->dedt);
+			if (c->polarity) {
+				LL_USART_SetDESignalPolarity(UartInstance,  LL_USART_DE_POLARITY_HIGH);
+			} else {
+				LL_USART_SetDESignalPolarity(UartInstance,  LL_USART_DE_POLARITY_LOW);
+			}
+			LL_USART_EnableDEMode(UartInstance);
+		} else {
+			LL_USART_DisableDEMode(UartInstance);
+		}
+		LL_USART_Enable(UartInstance);
+		return 0;
+	}
+	}
+	return -ENOTSUP;
+}
+#endif
+
 static int uart_stm32_poll_in(struct device *dev, unsigned char *c)
 {
 	USART_TypeDef *UartInstance = UART_STRUCT(dev);
@@ -574,6 +605,9 @@ static const struct uart_driver_api uart_stm32_driver_api = {
 	.poll_out = uart_stm32_poll_out,
 	.configure = uart_stm32_configure,
 	.config_get = uart_stm32_config_get,
+#ifdef CONFIG_UART_STM32_DRV_CMD
+	.drv_cmd = uart_stm32_drv_cmd,
+#endif
 #ifdef CONFIG_UART_INTERRUPT_DRIVEN
 	.fifo_fill = uart_stm32_fifo_fill,
 	.fifo_read = uart_stm32_fifo_read,

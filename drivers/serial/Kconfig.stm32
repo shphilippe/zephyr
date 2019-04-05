@@ -17,6 +17,13 @@ menuconfig UART_STM32
 
 if UART_STM32
 
+config UART_STM32_DRV_CMD
+	bool "Enable driver commands"
+	select UART_DRV_CMD
+	help
+		This enable the API for app to send to the driver.
+		Says n if not sure.
+
 # --- port 1 ---
 
 config UART_1
