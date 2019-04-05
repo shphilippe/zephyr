@@ -104,6 +104,14 @@
 				label = "GPIOF";
 			};
 		};
+		adc1: adc@40012400 {
+			compatible = "st,stm32-adc";
+			reg = <0x40012400 0x400>;
+			clocks = <&rcc STM32_CLOCK_BUS_APB2 0x00100000>;
+			interrupts = <12 0>;
+			status = "disabled";
+			label = "ADC_1";
+		};
 
 		usart1: serial@40013800 {
 			compatible = "st,stm32-usart", "st,stm32-uart";
