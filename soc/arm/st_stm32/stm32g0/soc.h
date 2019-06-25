@@ -48,6 +48,10 @@
 #include <stm32g0xx_ll_adc.h>
 #endif
 
+#ifdef CONFIG_I2C_STM32_V2
+#include <stm32g0xx_ll_i2c.h>
+#endif
+
 #endif /* !_ASMLANGUAGE */
 
 #endif /* _STM32G0_SOC_H_ */
